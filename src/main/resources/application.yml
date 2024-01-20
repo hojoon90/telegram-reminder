@@ -1,0 +1,12 @@
+telegram:
+  server-observe-bot:
+    name: todo
+    token: todo
+    chatId: todo
+
+spring:
+  batch:
+    job:
+      enabled: false
+  main:
+    allow-bean-definition-overriding: true
