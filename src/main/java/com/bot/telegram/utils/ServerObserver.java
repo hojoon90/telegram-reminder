@@ -4,10 +4,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
-import java.util.List;
 
 @Component
 public class ServerObserver {
@@ -22,53 +20,50 @@ public class ServerObserver {
 
     //TODO 공통화 고민
     public String checkServerList(String send_txt) {
+
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+        HttpEntity entity = new HttpEntity(null, httpHeaders);
+        RestTemplate restTemplate  = new RestTemplate();
+        String sendUrl = "";
 
-        send_txt = makeStatusMessage(send_txt, checkUrl);
+        for (String url : checkUrl) {
+            try{
+                sendUrl = url.split(",")[1] ;
+                ResponseEntity<String> responseEntity = restTemplate.exchange(sendUrl, HttpMethod.GET, entity, String.class);
+                boolean statusCode = responseEntity.getStatusCode().value() == HttpStatus.OK.value();
+                makeStatusMessage(statusCode, url, send_txt);
+            } catch (Exception e) {
+                send_txt += url + " service : fail \n";
+            }
+        }
         return send_txt;
     }
 
     //TODO 공통화 고민
     public String checkIpList(String send_txt) {
-        send_txt = makeStatusMessage(send_txt, checkIp);
-        return send_txt;
-    }
+        String sendIp = "";
 
-    private boolean checkServerAlive(String sendUrl, HttpEntity entity, RestTemplate restTemplate) throws IOException {
-        ResponseEntity<String> responseEntity = restTemplate.exchange(sendUrl, HttpMethod.GET, entity, String.class);
-        boolean isAlive = responseEntity.getStatusCode().value() == HttpStatus.OK.value();
-
-        return isAlive;
-    }
-
-    private boolean checkIpAlive(String sendIp) throws IOException {
-        InetAddress pingCheck = InetAddress.getByName(sendIp);
-        boolean isAlive = pingCheck.isReachable(1000);
-
-        return isAlive;
-    }
-
-    public String makeStatusMessage(String send_txt, String[] list) {
-        String temp = "";
-
-        for (String source : list) {
+        for (String ip : checkIp) {
             try {
-                temp = source.split(",")[1] ;
-                InetAddress pingCheck = InetAddress.getByName(temp);
+                sendIp = ip.split(",")[1];
+                InetAddress pingCheck = InetAddress.getByName(sendIp);
                 boolean isAlive = pingCheck.isReachable(1000);
-                if (isAlive) {
-                    send_txt += source.split(",")[0] + " : success \n";
-                } else {
-                    send_txt += source.split(",")[0] + " : fail \n";
-                }
+                makeStatusMessage(isAlive, ip, send_txt);
             } catch (Exception e) {
-                send_txt += source + " service : fail \n";
+                send_txt += ip + " service : fail \n";
             }
         }
 
+        return send_txt;
+    }
 
-
+    public String makeStatusMessage(boolean isOk, String source, String send_txt) {
+        if (isOk) {
+            send_txt += source.split(",")[0] + " : success \n";
+        } else {
+            send_txt += source.split(",")[0] + " : fail \n";
+        }
         return send_txt;
     }
 
