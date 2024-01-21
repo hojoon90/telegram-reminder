@@ -4,6 +4,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 
@@ -18,53 +19,54 @@ public class ServerObserver {
         //TODO IP 등록
     };
 
-    //TODO 공통화 고민
+    private HttpHeaders httpHeaders;
+    private HttpEntity entity;
+    private RestTemplate restTemplate;
+
     public String checkServerList(String send_txt) {
-
-        HttpHeaders httpHeaders = new HttpHeaders();
+        //TODO 전역 처리 잘 되는지 확인 필ㅇ요
+        httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        HttpEntity entity = new HttpEntity(null, httpHeaders);
-        RestTemplate restTemplate  = new RestTemplate();
-        String sendUrl = "";
+        entity = new HttpEntity(null, httpHeaders);
+        restTemplate  = new RestTemplate();
 
-        for (String url : checkUrl) {
-            try{
-                sendUrl = url.split(",")[1] ;
-                ResponseEntity<String> responseEntity = restTemplate.exchange(sendUrl, HttpMethod.GET, entity, String.class);
-                boolean statusCode = responseEntity.getStatusCode().value() == HttpStatus.OK.value();
-                makeStatusMessage(statusCode, url, send_txt);
-            } catch (Exception e) {
-                send_txt += url + " service : fail \n";
-            }
-        }
-        return send_txt;
+        return makeText(checkUrl, send_txt);
     }
 
-    //TODO 공통화 고민
     public String checkIpList(String send_txt) {
-        String sendIp = "";
+        return makeText(checkIp, send_txt);
+    }
 
-        for (String ip : checkIp) {
+    public String makeText(String[] checkList, String send_txt) {
+        for (String checkValue : checkList) {
             try {
-                sendIp = ip.split(",")[1];
-                InetAddress pingCheck = InetAddress.getByName(sendIp);
-                boolean isAlive = pingCheck.isReachable(1000);
-                makeStatusMessage(isAlive, ip, send_txt);
+                String source = checkValue.split(",")[1];
+                boolean isAlive = checkAlive(source);
+                send_txt += makeStatusMessage(isAlive, checkValue);
             } catch (Exception e) {
-                send_txt += ip + " service : fail \n";
+                send_txt += checkValue + " service : fail \n";
             }
         }
-
         return send_txt;
     }
 
-    public String makeStatusMessage(boolean isOk, String source, String send_txt) {
-        if (isOk) {
-            send_txt += source.split(",")[0] + " : success \n";
-        } else {
-            send_txt += source.split(",")[0] + " : fail \n";
+    public boolean checkAlive(String source) throws IOException {
+        boolean isAlive;
+        //TODO IP, URL 구분 방식 체크 필요
+        if(source.contains("\\.")){
+            ResponseEntity<String> responseEntity = restTemplate.exchange(source, HttpMethod.GET, entity, String.class);
+            isAlive = responseEntity.getStatusCode().value() == HttpStatus.OK.value();
+        }else{
+            InetAddress pingCheck = InetAddress.getByName(source);
+            isAlive = pingCheck.isReachable(1000);
         }
-        return send_txt;
+
+        return isAlive;
+    }
+
+    public String makeStatusMessage(boolean isOk, String checkValue) {
+        String value = isOk ? " : success \n" : " : fail \n";
+        return checkValue.split(",")[0] + value ;
     }
 
 }
