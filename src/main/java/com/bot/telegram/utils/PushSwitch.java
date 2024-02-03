@@ -1,13 +1,15 @@
 package com.bot.telegram.utils;
 
 public class PushSwitch {
-
-    private static boolean sendPush;
-    public static boolean isSendPush() {
-        return sendPush;
+    private static boolean serverPush;
+    public static boolean isServerPush() {
+        return serverPush;
     }
-    public static void setSendPush(boolean sendPush) {
-        PushSwitch.sendPush = sendPush;
+    public static boolean isNotServerPush() {
+        return !serverPush;
+    }
+    public static void setServerPush(boolean serverPush) {
+        PushSwitch.serverPush = serverPush;
     }
 
 }

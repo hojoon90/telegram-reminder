@@ -1,5 +1,7 @@
-package com.bot.telegram.message.custom;
+package com.bot.telegram.message.custom.observer;
 
+import com.bot.telegram.message.custom.CustomMessage;
+import com.bot.telegram.message.custom.TokenManager;
 import com.bot.telegram.utils.TeleStringUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -16,11 +18,11 @@ import static com.bot.telegram.common.TelegramConst.*;
 
 
 @Component
-public class ShellMessage implements CustomMessage{
+public class ShellMessage extends TokenManager implements CustomMessage {
 
     @Override
-    public boolean isSupport(String text) {
-        return text.contains(COMMAND_SHELL);
+    public boolean isSupport(String text, String botToken) {
+        return text.contains(COMMAND_SHELL) && this.serverBotToken.equals(botToken);
     }
 
     /**
@@ -31,26 +33,27 @@ public class ShellMessage implements CustomMessage{
      * docker node ls <br>
      * docker service ls <br>
      * docker service ps <br>
-     *</p>
+     * </p>
+     *
      * @param update
      * @return
      */
     @Override
-    public List<SendMessage> makeMultipleMessage(Update update) {
+    public List<SendMessage> getMessage(Update update) {
         String text = update.getMessage().getText();
         String chatId = update.getMessage().getChatId().toString();
         List<SendMessage> sendMessages = new ArrayList<>();
 
-        text = text.replaceAll("/"+ COMMAND_SHELL, "");
+        text = text.replaceAll("/" + COMMAND_SHELL, "");
         text = TeleStringUtils.convertStringData(REMOTE_COMMAND, text);
         List<String> textList = makeMessageText(text);
 
         textList.forEach(sendText ->
                 sendMessages.add(
-                    SendMessage.builder()
-                            .text(sendText)
-                            .chatId(chatId)
-                            .build()
+                        SendMessage.builder()
+                                .text(sendText)
+                                .chatId(chatId)
+                                .build()
                 ));
         return sendMessages;
     }
@@ -58,6 +61,7 @@ public class ShellMessage implements CustomMessage{
     /**
      * 허용 안되는 명령어 조건
      * update , rm , stop , run, create  ==> 사용안됨
+     *
      * @param text
      * @return
      */
@@ -73,6 +77,7 @@ public class ShellMessage implements CustomMessage{
 
     /**
      * 메세지 생성 메서드
+     *
      * @param text
      * @return
      */
@@ -104,5 +109,4 @@ public class ShellMessage implements CustomMessage{
 
         return Arrays.asList(returnTxt);
     }
-
 }

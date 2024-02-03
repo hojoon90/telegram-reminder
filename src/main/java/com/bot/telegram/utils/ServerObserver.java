@@ -8,23 +8,22 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 
+import static com.bot.telegram.common.TelegramConst.HTTPS_COLON_SLASH;
+
 @Component
 public class ServerObserver {
 
     public static String[] checkUrl = {
         //TODO URL 등록
     };
-
     public static String[] checkIp = {
         //TODO IP 등록
     };
-
     private HttpHeaders httpHeaders;
     private HttpEntity entity;
     private RestTemplate restTemplate;
 
     public String checkServerList(String send_txt) {
-        //TODO 전역 처리 잘 되는지 확인 필ㅇ요
         httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
         entity = new HttpEntity(null, httpHeaders);
@@ -52,8 +51,7 @@ public class ServerObserver {
 
     public boolean checkAlive(String source) throws IOException {
         boolean isAlive;
-        //TODO IP, URL 구분 방식 체크 필요
-        if(source.contains("\\.")){
+        if(source.contains(HTTPS_COLON_SLASH)){
             ResponseEntity<String> responseEntity = restTemplate.exchange(source, HttpMethod.GET, entity, String.class);
             isAlive = responseEntity.getStatusCode().value() == HttpStatus.OK.value();
         }else{

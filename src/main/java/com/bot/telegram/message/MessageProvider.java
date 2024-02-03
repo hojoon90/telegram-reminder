@@ -4,6 +4,7 @@ import com.bot.telegram.message.custom.CustomMessage;
 import com.bot.telegram.message.custom.NoMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
@@ -18,9 +19,10 @@ public class MessageProvider {
 
     private final List<CustomMessage> messageList;
 
-    public CustomMessage getCustomMessage(String text) {
+    public CustomMessage getCustomMessage(Update update, String botToken) {
+        String text = update.getMessage().getText();
         for (CustomMessage customMessage : messageList) {
-            if (customMessage.isSupport(text)) {
+            if (customMessage.isSupport(text, botToken)) {
                 return customMessage;
             }
         }
@@ -31,5 +33,4 @@ public class MessageProvider {
                 .findFirst()
                 .get();
     }
-
 }

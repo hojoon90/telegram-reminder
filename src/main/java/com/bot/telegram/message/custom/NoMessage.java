@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class NoMessage implements CustomMessage{
 
     @Override
-    public boolean isSupport(String text) {
+    public boolean isSupport(String text, String botToken) {
         return false;
     }
 

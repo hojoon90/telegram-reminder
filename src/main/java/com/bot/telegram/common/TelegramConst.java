@@ -22,4 +22,7 @@ public class TelegramConst {
     public static final String REMOTE_COMMAND = "ssh -i ~/.ssh/id_rsa -T app@{} '{}'";
 
 
+    public static final String HTTPS_COLON_SLASH = "https://";
+
+
 }

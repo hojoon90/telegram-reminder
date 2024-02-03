@@ -12,7 +12,7 @@ public class HelpMessage implements CustomMessage{
 
 
     @Override
-    public boolean isSupport(String text) {
+    public boolean isSupport(String text, String botToken) {
         return text.contains(COMMAND_HELP);
     }
 

@@ -1,6 +1,8 @@
-package com.bot.telegram.message.custom;
+package com.bot.telegram.message.custom.observer;
 
 import com.bot.telegram.domain.ResultData;
+import com.bot.telegram.message.custom.CustomMessage;
+import com.bot.telegram.message.custom.TokenManager;
 import com.bot.telegram.utils.PushSwitch;
 import com.bot.telegram.utils.ServerObserver;
 import lombok.RequiredArgsConstructor;
@@ -17,18 +19,18 @@ import static com.bot.telegram.common.TelegramConst.DATE_PATTERN;
 
 @Component
 @RequiredArgsConstructor
-public class StatsMessage implements CustomMessage {
-
+public class StatsMessage extends TokenManager implements CustomMessage {
 
     private final ServerObserver serverObserver;
 
     @Override
-    public boolean isSupport(String text) {
-        return text.contains(COMMAND_STATS);
+    public boolean isSupport(String text, String botToken) {
+        return text.contains(COMMAND_STATS) && this.serverBotToken.equals(botToken);
     }
 
     /**
      * 서버 상태 체크 후 결과값 생성.
+     *
      * @param update
      * @return
      */
@@ -52,7 +54,7 @@ public class StatsMessage implements CustomMessage {
         send_txt += "  \n";
         // IP port 체크
         send_txt = serverObserver.checkIpList(send_txt);
-        send_txt += "\n push value = " + PushSwitch.isSendPush();
+        send_txt += "\n push value = " + PushSwitch.isServerPush();
 
         return ResultData.builder()
                 .sendMessage(send_txt)
